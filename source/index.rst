@@ -1,179 +1,131 @@
-Frequently Asked Questions
-==========================
+Welcome to Read The Docs
+========================
 
-My project isn't building with autodoc
---------------------------------------
+`Read the Docs`_ hosts documentation for the open source community.
+We support Sphinx_ docs written with reStructuredText_ and Markdown_ docs written with Mkdocs_.
+We pull your code from your Subversion_, Bazaar_, Git_, and Mercurial_ repositories.
+Then we build documentation and host it for you.
+Think of it as *Continuous Documentation*.
 
-First, you should check out the Builds tab of your project. That records all of the build attempts that RTD has made to build your project. If you see ``ImportError`` messages for custom Python modules, you should enable the virtualenv feature in the Admin page of your project, which will install your project into a virtualenv, and allow you to specify a ``requirements.txt`` file for your project.
+The code is open source, and `available on github`_.
 
-If you are still seeing errors because of C library dependencies, please see the below section about that.
+.. _Read the docs: http://readthedocs.org/
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _reStructuredText: http://sphinx.pocoo.org/rest.html
+.. _Markdown: http://daringfireball.net/projects/markdown/syntax
+.. _Mkdocs: http://www.mkdocs.org/
+.. _Subversion: http://subversion.tigris.org/
+.. _Bazaar: http://bazaar.canonical.com/
+.. _Git: http://git-scm.com/
+.. _Mercurial: http://mercurial.selenic.com/
+.. _available on github: http://github.com/rtfd/readthedocs.org
 
-How do I change behavior for Read the Docs?
--------------------------------------------
+The main documentation for the site is organized into a couple sections:
 
-When RTD builds your project, it sets the `READTHEDOCS` environment variable to the string `True`. So within your Sphinx's ``conf.py`` file, you can vary the behavior based on this. For example::
+* :ref:`site-docs`
+* :ref:`feature-docs`
+* :ref:`about-docs`
 
-    import os
-    on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-    if on_rtd:
-        html_theme = 'default'
-    else:
-        html_theme = 'nature'
+Information about development is also available:
 
-The ``READTHEDOCS`` variable is also available in the Sphinx build environment, and will be set to ``True`` when building on RTD::
+* :ref:`dev-docs`
+* :ref:`design-docs`
+* :ref:`ops-docs`
 
-    {% if READTHEDOCS %}
-    Woo
-    {% endif %}
+.. _site-docs:
 
-I get import errors on libraries that depend on C modules
-----------------------------------------------------------
+User Documentation
+------------------
 
-.. note::
-    Another use case for this is when you have a module with a C extension.
+.. toctree::
+    :maxdepth: 2
 
-This happens because our build system doesn't have the dependencies for building your project. This happens with things like libevent and mysql, and other python things that depend on C libraries. We can't support installing random C binaries on our system, so there is another way to fix these imports.
+    getting_started
+    versions
+    builds
+    features
+    support
+    faq
 
-You can mock out the imports for these modules in your ``conf.py`` with the following snippet::
+.. _feature-docs:
 
-    import sys
-    from unittest.mock import MagicMock
+Features
+~~~~~~~~
 
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-                return Mock()
+.. toctree::
+    :maxdepth: 2
 
-    MOCK_MODULES = ['pygtk', 'gtk', 'gobject', 'argparse', 'numpy', 'pandas']
-    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+    webhooks
+    badges
+    alternate_domains
+    localization
+    vcs
+    canonical
+    redirects
+    single_version
+    privacy
 
-Of course, replacing `MOCK_MODULES` with the modules that you want to mock out.
+.. _business-docs:
 
-.. Tip:: The library ``unittest.mock`` was introduced on python 3.3. On earlier versions install the ``mock`` library
-    from PyPI with (ie ``pip install mock``) and replace the above import::
+Business Documentation
+----------------------
 
-        from mock import Mock as MagicMock
+.. toctree::
+    :maxdepth: 2
 
-`Client Error 401` when building documentation
-----------------------------------------------
+   business/index
 
-If you did not install the `test_data` fixture during the installation
-instructions, you will get the following error::
+.. _dev-docs:
 
-    slumber.exceptions.HttpClientError: Client Error 401: http://localhost:8000/api/v1/version/
+Developer Documentation
+-----------------------
 
-This is because the API admin user does not exist, and so cannot authenticate.
-You can fix this by loading the test_data::
+.. toctree::
+    :maxdepth: 2
 
-    ./manage.py loaddata test_data
+    install
+    contribute
+    tests
+    architecture
+    symlinks
+    settings
+    i18n
+    api
+    api/index
 
-If you'd prefer not to install the test data, you'll need to provide a database
-account for the builder to use. You can provide these credentials by editing the
-following settings::
+.. _design-docs:
 
-    SLUMBER_USERNAME = 'test'
-    SLUMBER_PASSWORD = 'test'
+Designer Documentation
+----------------------
 
-Can I make search engines only see one version of my docs?
-----------------------------------------------------------
+.. toctree::
+    :maxdepth: 2
 
-You can do this for Google at least with a canonical link tag.
-It should look like:
+    design
+    theme
 
-.. code-block:: jinja
+.. _about-docs:
 
-        <link rel="canonical" href="http://ericholscher.com/
-        {%- for word in pagename.split('/') -%}
-            {%- if word != 'index' -%}
-                {%- if word != '' -%}
-                    {{ word }}/
-                {%- endif -%}
-            {%- endif -%}
-        {%- endfor -%}
-        {% if builder == "dirhtml" %}/{% else %}.html{% endif %}
-        ">
+About Read the Docs
+-------------------
 
+.. toctree::
+    :maxdepth: 2
 
-Deleting a stale or broken build environment
---------------------------------------------
-
-RTD doesn't expose this in the UI, but it is possible to remove the build directory of your project. If you want to remove a build environment for your project, hit http://readthedocs.org/wipe/<project_slug>/<version_slug>/. You must be logged in to do this.
+    open-source-philosophy
+    sponsors
+    talks
 
 
-How do I host multiple projects on one CNAME?
----------------------------------------------
+.. Things that need more love before getting upgraded to the above list.
 
-We support the concept of Subprojects.
-If you add a subproject to a project,
-that documentation will also be served under the parent project's subdomain.
+.. _ops-docs:
 
-For example,
-Kombu is a subproject of celery,
-so you can access it on the `celery.readthedocs.org` domain:
+Operations Documentation
+------------------------
 
-http://celery.readthedocs.org/projects/kombu/en/latest/
+.. toctree::
+    :maxdepth: 2
 
-This also works the same for CNAME's:
-
-http://docs.celeryproject.org/projects/kombu/en/latest/
-
-You can add subprojects in the Admin section for your project.
-
-Where do I need to put my docs for RTD to find it?
---------------------------------------------------
-
-Read the Docs will crawl your project looking for a ``conf.py``. Where it finds the ``conf.py``, it will run ``sphinx-build`` in that directory. So as long as you only have one set of sphinx documentation in your project, it should Just Work.
-
-I want to use the Blue/Default Sphinx theme
--------------------------------------------
-
-We think that our theme is badass, and better than the default for many reasons. Some people don't like change though :), so there is a hack that will let you keep using the default theme. If you set the ``html_style`` variable in your ``conf.py``, it should default to using the default theme. The value of this doesn't matter, and can be set to ``/default.css`` for default behavior.
-
-I want to use the Read the Docs theme locally
----------------------------------------------
-
-There is a repository for that: https://github.com/snide/sphinx_rtd_theme.
-Simply follow the instructions in the README.
-
-Image scaling doesn't work in my documentation
------------------------------------------------
-
-Image scaling in docutils depends on PIL. PIL is installed in the system that RTD runs on. However, if you are using the virtualenv building option, you will likely need to include PIL in your requirements for your project.
-
-I want comments in my docs
---------------------------
-
-RTD doesn't have explicit support for this. That said, a tool like `Disqus`_ can be used for this purpose on RTD.
-
-.. _Disqus: http://disqus.com/
-
-How do I support multiple languages of documentation?
------------------------------------------------------
-
-See the section on :ref:`Localization of Documentation`.
-
-Do I need to be whitelisted?
-----------------------------
-
-No. Whitelisting has been removed as a concept in Read the Docs. You should have access to all of the features already.
-
-Does Read The Docs work well with "legible" docstrings?
--------------------------------------------------------
-
-Yes. One criticism of Sphinx is that its annotated docstrings are too
-dense and difficult for humans to read. In response, many projects
-have adopted customized docstring styles that are simultaneously
-informative and legible. The
-`NumPy <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>`_
-and
-`Google <http://google-styleguide.googlecode.com/svn/trunk/pyguide.html?showone=Comments#Comments>`_
-styles are two popular docstring formats.  Fortunately, the default
-Read The Docs theme handles both formats just fine, provided
-your ``conf.py`` specifies an appropriate Sphinx extension that
-knows how to convert your customized docstrings.  Two such extensions
-are `numpydoc <https://github.com/numpy/numpydoc>`_ and
-`napoleon <http://sphinxcontrib-napoleon.readthedocs.org>`_. Only
-``napoleon`` is able to handle both docstring formats. Its default
-output more closely matches the format of standard Sphinx annotations,
-and as a result, it tends to look a bit better with the default theme.
+    rtfd
 
