@@ -46,6 +46,7 @@ User Documentation
     features
     support
     faq
+    sublime
 
 .. _feature-docs:
 
